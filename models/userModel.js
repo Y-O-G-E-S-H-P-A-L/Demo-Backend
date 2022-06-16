@@ -10,14 +10,14 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
+    unique: true,
   },
   contact: {
     type: Number,
     required: true,
   },
-  Picture: {
-    data: Buffer,
-    contentType: String,
+  profilePicture: {
+    type: String,
   },
   location: {
     longitude: {

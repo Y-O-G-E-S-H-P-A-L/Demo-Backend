@@ -1,10 +1,14 @@
 const express = require("express");
 const { registerUser, loginUser } = require("../controllers/userController");
+const multer = require("multer");
+const path = require("path");
 
 const router = express.Router();
 
-router.route("/register").post(registerUser);
+router.app(express.static(__dirname + "../uploads"));
 
-router.route("/login").post(loginUser);
+router.post("/register", registerUser);
+
+router.post("/login", loginUser);
 
 module.exports = router;
