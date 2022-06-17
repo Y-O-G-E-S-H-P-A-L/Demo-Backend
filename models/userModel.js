@@ -17,15 +17,11 @@ const userSchema = new mongoose.Schema({
     required: true,
   },
   profilePicture: {
-    type: String,
+    data: Buffer,
+    contentType: String,
   },
   location: {
-    longitude: {
-      type: Number,
-    },
-    latitude: {
-      type: Number,
-    },
+    type: String,
   },
   password: {
     type: String,
