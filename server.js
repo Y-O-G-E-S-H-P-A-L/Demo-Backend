@@ -12,10 +12,11 @@ mongoose
     useUnifiedTopology: true,
   })
   .then(() => {
-    console.log(`connection successfull`);
+    console.log(`Database Connected.`);
+  })
+  .then(() => {
+    app.listen(process.env.PORT, () => {
+      console.log(`Server is working on http://localhost:${process.env.PORT}`);
+    });
   })
   .catch((err) => console.log({ err }));
-
-app.listen(process.env.PORT, () => {
-  console.log(`Server is working on http://localhost:${process.env.PORT}`);
-});

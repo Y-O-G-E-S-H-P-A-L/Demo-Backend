@@ -6,23 +6,24 @@ exports.registerUser = async (req, res) => {
   const { name, email, contact, profilePicture, location, password, cPassword } = req.body;
 
   if (!name || !email || !password || !cPassword) {
-    return res.status(422).json({ error: "Please fill the form completely" });
-  }
-  try {
-    const finduserExist = await User.findOne({ email: email });
-    if (finduserExist) {
-      return res.status(422).json({ error: "Email allready exist" });
-    } else if (password != cPassword) {
-      return res.status(422).json({ error: "Password not match" });
-    } else {
-      const user = new User({ name, email, contact, profilePicture, location, password, cPassword });
-      // ---- before saving bycrpt is running in userSchema ----
-      await user.save();
-      console.log(`Registered Successfully.`);
-      res.status(201).json({ message: "Registered Successfully." });
+    return res.status(400).json({ error: "Please fill the form completely" });
+  } else {
+    try {
+      const finduserExist = await User.findOne({ email: email });
+      if (finduserExist) {
+        return res.status(422).json({ error: "Email allready Registered. Please Login !!" });
+      } else if (password != cPassword) {
+        return res.status(422).json({ error: "Passwords not match" });
+      } else {
+        const user = new User({ name, email, contact, profilePicture, location, password, cPassword });
+        // ---- before saving bycrpt is running in userSchema ----
+        await user.save();
+        console.log(`Registered Successfully.`);
+        res.status(201).json({ message: "Registered Successfully." });
+      }
+    } catch (err) {
+      console.log(err);
     }
-  } catch (err) {
-    console.log(err);
   }
 };
 
