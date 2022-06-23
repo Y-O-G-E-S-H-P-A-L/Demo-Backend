@@ -18,9 +18,11 @@ const userSchema = new mongoose.Schema({
   },
   profilePicture: {
     type: String,
+    default: "",
   },
   location: {
     type: String,
+    required: true,
   },
   password: {
     type: String,
@@ -34,27 +36,14 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
-
-  pending: [
-    {
-      status: {
-        type: Boolean,
-      },
-      pendingUser: {
-        type: String,
-      },
-    },
-  ],
-  connected: [
-    {
-      status: {
-        type: Boolean,
-      },
-      connectedUser: {
-        type: String,
-      },
-    },
-  ],
+  followings: {
+    type: Array,
+    default: [],
+  },
+  followers: {
+    type: Array,
+    default: [],
+  },
 });
 
 userSchema.pre("save", async function (next) {
