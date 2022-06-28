@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema({
   },
   contact: {
     type: Number,
-    required: true,
+    default: 00,
   },
   profilePicture: {
     type: String,
@@ -22,7 +22,6 @@ const userSchema = new mongoose.Schema({
   },
   location: {
     type: String,
-    required: true,
   },
   password: {
     type: String,
@@ -36,11 +35,11 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
-  followings: {
+  friends: {
     type: Array,
     default: [],
   },
-  followers: {
+  pendings: {
     type: Array,
     default: [],
   },

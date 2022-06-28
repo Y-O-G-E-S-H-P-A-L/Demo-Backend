@@ -17,8 +17,7 @@ exports.registerUser = async (req, res) => {
       } else {
         const user = new User({ name, email, contact, profilePicture, location, password, cPassword });
         await user.save();
-        console.log(`Registered Successfully.`);
-        res.status(201).json({ message: "Registered Successfully." });
+        res.status(200).json({ message: "Registered Successfully." });
       }
     } catch (err) {
       console.log(err);
@@ -26,31 +25,33 @@ exports.registerUser = async (req, res) => {
   }
 };
 
+let loggedInUser = {};
+// Get Logged in User
+exports.getLoggedInUser = (req, res) => {
+  return res.json({ loggedInUser });
+};
+
 // Login User
 exports.loginUser = async (req, res) => {
   const { email, password } = req.body;
-
   if (!email || !password) {
     return res.status(422).json({ error: "Please enter valid details." });
   }
-
-  const existingUser = await User.findOne({ email: email }); //---------> email validation
-
-  if (existingUser) {
-    const MatchingPasswords = await bcrypt.compare(password, existingUser.password);
+  const user = await User.findOne({ email: email }); //---------> email validation
+  if (user) {
+    const MatchingPasswords = await bcrypt.compare(password, user.password);
     if (!MatchingPasswords) {
       res.status(400).json({ error: " Email or Password is incorrect." });
     } else {
-      res.json({ message: "Login successfully." });
-      console.log("Login successfully.");
+      loggedInUser = user;
+      res.json({ message: "Login successfully.", user });
     }
   } else {
     res.status(400).json({ error: "Email or Password is incorrect." });
   }
 };
-
-// Get User Details
-exports.getDetails = async (req, res) => {
+// Get User Profile
+exports.getUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     res.status(200).json(user);
@@ -59,44 +60,85 @@ exports.getDetails = async (req, res) => {
   }
 };
 
-// Follow a User
-exports.followUser = async (req, res) => {
-  if (req.body.userId !== req.params.id) {
-    try {
-      const user = await User.findById(req.params.id);
-      const currentUser = await User.findById(req.body.userId);
-      if (!user.followers.includes(req.body.userId)) {
-        await user.updateOne({ $push: { followers: req.body.userId } });
-        await currentUser.updateOne({ $push: { followings: req.params.id } });
-        res.status(200).json("Followed Successfully !!");
-      } else {
-        res.status(403).json("You already follow this user !!");
-      }
-    } catch (err) {
-      res.status(500).json(err);
-    }
-  } else {
-    res.status(403).json("You cant follow yourself !!");
+// Get All User
+exports.getAllUser = async (req, res) => {
+  try {
+    const user = await User.find();
+    res.status(200).json(user);
+  } catch (err) {
+    res.status(404).json(err);
   }
 };
 
-// Unfollow a User
-exports.unfollowUser = async (req, res) => {
+// Send Request
+exports.sendRequest = async (req, res) => {
   if (req.body.userId !== req.params.id) {
     try {
-      const user = await User.findById(req.params.id);
-      const currentUser = await User.findById(req.body.userId);
-      if (user.followers.includes(req.body.userId)) {
-        await user.updateOne({ $pull: { followers: req.body.userId } });
-        await currentUser.updateOne({ $pull: { followings: req.params.id } });
-        res.status(200).json("Unfollowed Successfully !!");
+      const sender = await User.findById(req.body.userId);
+      const receiver = await User.findById(req.params.id);
+
+      if (!receiver.pendings.includes(sender._id)) {
+        if (!receiver.friends.include(sender._id)) {
+          await receiver.updateOne({ $push: { pendings: sender._id } });
+        } else {
+          res.status(403).json({ error: "You both are already friends !!" });
+        }
+        res.status(200).json({ message: "Send Request Successfully !!" });
       } else {
-        res.status(403).json("You can't unfollow this user !!");
+        res.status(403).json({ error: "You already send request to this user !!" });
       }
     } catch (err) {
       res.status(500).json(err);
     }
   } else {
-    res.status(403).json("You cant unfollow yourself !!");
+    res.status(403).json({ error: "You can't send request yourself !!" });
+  }
+};
+
+// Accept  Request
+exports.acceptRequest = async (req, res) => {
+  if (req.body.userId !== req.params.id) {
+    try {
+      const sender = await User.findById(req.body.id);
+      const receiver = await User.findById(req.params.userId);
+
+      if (sender.pendings.includes(receiver._id)) {
+        await sender.updateOne({ $push: { friends: receiver._id } });
+        await receiver.updateOne({ $push: { friends: sender._id } });
+
+        await sender.updateOne({ $pull: { pendings: receiver._id } });
+        await receiver.updateOne({ $pull: { pendings: sender._id } });
+
+        res.status(200).json({ message: "Accepted Successfully !!" });
+      } else {
+        res.status(403).json({ error: "You both are already friends !!" });
+      }
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  } else {
+    res.status(403).json({ error: "You cant accept request yourself !!" });
+  }
+};
+
+// Reject Request
+exports.rejectRequest = async (req, res) => {
+  if (req.body.userId !== req.params.id) {
+    try {
+      const sender = await User.findById(req.body.id);
+      const receiver = await User.findById(req.params.userId);
+
+      if (!user.pendings.includes(req.body.userId)) {
+        await sender.updateOne({ $pull: { pendings: receiver._id } });
+        await receiver.updateOne({ $pull: { pendings: sender._id } });
+        res.status(200).json({ message: "Reject Request Successfully !!" });
+      } else {
+        res.status(403).json({ error: "You already unfollow this user !!" });
+      }
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  } else {
+    res.status(403).json({ error: "You cant unfollow yourself !!" });
   }
 };
