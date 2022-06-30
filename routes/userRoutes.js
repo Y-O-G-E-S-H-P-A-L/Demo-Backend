@@ -15,7 +15,7 @@ router.get("/:id", getUser);
 router.get("/", getAllUser);
 
 // Get Requests and Friends
-router.get("/requests", getRequests);
-router.get("/friends", getFriends);
+router.get("/requests/:id", getRequests);
+router.get("/friends/:id", getFriends);
 
 module.exports = router;

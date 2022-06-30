@@ -39,7 +39,7 @@ const userSchema = new mongoose.Schema({
     type: Array,
     default: [],
   },
-  pendings: {
+  requests: {
     type: Array,
     default: [],
   },

@@ -47,21 +47,21 @@ exports.loginUser = async (req, res) => {
 
 // Get User Details
 exports.getUser = async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
+  const user = await User.findById(req.params.id);
+  if (user) {
     res.status(200).json(user);
-  } catch (err) {
-    res.status(404).json({ error: "User not found !!" });
+  } else {
+    res.status(404).json({ error: "User not Found !!" });
   }
 };
 
 // Get All User
 exports.getAllUser = async (req, res) => {
   try {
-    const users = await User.find();
-    res.status(200).json(users);
+    const user = await User.find();
+    res.status(200).json(user);
   } catch (err) {
-    res.status(403).json({ error: "No user Found !!" });
+    res.status(500).json(err);
   }
 };
 
@@ -73,9 +73,9 @@ exports.sendRequest = async (req, res) => {
       const reciever = await User.findById(req.params.id);
 
       if (!reciever.friends.includes(sender._id)) {
-        if (!reciever.pendings.includes(sender._id)) {
-          if (!sender.pendings.includes(reciever._id)) {
-            await reciever.updateOne({ $push: { pendings: sender._id } });
+        if (!reciever.requests.includes(sender._id)) {
+          if (!sender.requests.includes(reciever._id)) {
+            await reciever.updateOne({ $push: { requests: sender._id } });
             res.status(200).json({ message: "Send request successfully !!" });
           } else {
             res.status(403).json({ error: "User already requested you !!" });
@@ -100,12 +100,12 @@ exports.acceptRequest = async (req, res) => {
     const sender = await User.findById(req.body.userId);
     const reciever = await User.findById(req.params.id);
 
-    if (sender.pendings.includes(reciever._id)) {
+    if (sender.requests.includes(reciever._id)) {
       await sender.updateOne({ $push: { friends: reciever._id } });
       await reciever.updateOne({ $push: { friends: sender._id } });
-      await sender.updateOne({ $pull: { pendings: reciever._id } });
+      await sender.updateOne({ $pull: { requests: reciever._id } });
     } else {
-      res.status(403).json({ error: "You get request already !!" });
+      res.status(403).json({ error: "You requested already !!" });
     }
     res.status(200).json({ message: "Accepted Successfully !!" });
   } else {
@@ -119,7 +119,7 @@ exports.rejectRequest = async (req, res) => {
     const sender = await User.findById(req.body.userId);
     const reciever = await User.findById(req.params.id);
 
-    await sender.updateOne({ $pull: { pendings: reciever._id } });
+    await sender.updateOne({ $pull: { requests: reciever._id } });
     res.status(200).json({ message: "Reject Request Successfully !!" });
   } else {
     res.status(403).json({ error: "You cant unfollow yourself !!" });
@@ -128,20 +128,20 @@ exports.rejectRequest = async (req, res) => {
 
 // Get All Requests
 exports.getRequests = async (req, res) => {
-  try {
-    const user = await User.findById(req.body.userId);
-    res.status(200).json({ Pendings: user.pendings });
-  } catch (err) {
+  const user = await User.findById(req.params.id);
+  if (user.requests.length > 0) {
+    res.status(200).json(user.requests);
+  } else {
     res.status(404).json({ error: "No Requests Found !!" });
   }
 };
 
 // Get All Friends
 exports.getFriends = async (req, res) => {
-  try {
-    const user = await User.findById(req.body.userId);
-    res.status(200).json({ Friends: user.friends });
-  } catch (err) {
-    res.status(404).json({ error: "No Friends Found !!" });
+  const user = await User.findById(req.params.id);
+  if (user.friends.length > 0) {
+    res.status(200).json(user.friends);
+  } else {
+    res.status(500).json({ error: "No Friends Found !!" });
   }
 };
