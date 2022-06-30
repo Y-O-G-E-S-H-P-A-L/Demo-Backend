@@ -1,5 +1,5 @@
 const express = require("express");
-const { registerUser, loginUser, getAllUser, getUser, getLoggedInUser, sendRequest, rejectRequest, acceptRequest } = require("../controllers/userController");
+const { registerUser, loginUser, getAllUser, getUser, sendRequest, rejectRequest, acceptRequest, getRequests, getFriends } = require("../controllers/userController");
 const router = express.Router();
 // auth
 router.post("/register", registerUser);
@@ -12,7 +12,10 @@ router.put("/rejectRequest/:id", rejectRequest);
 
 // User Details
 router.get("/:id", getUser);
-router.get("/loggedInUser", getLoggedInUser);
 router.get("/", getAllUser);
+
+// Get Requests and Friends
+router.get("/requests", getRequests);
+router.get("/friends", getFriends);
 
 module.exports = router;
